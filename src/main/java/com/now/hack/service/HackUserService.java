@@ -12,6 +12,6 @@ import com.now.hack.repository.HackUserRepository;
 public class HackUserService {
 	private static final Logger logger = LogManager.getLogger(Hack4PeopleApplication.class);
 	@Autowired
-	private   HackUserRepository hackUserRepository;
+private   HackUserRepository hackUserRepository;
 
 }

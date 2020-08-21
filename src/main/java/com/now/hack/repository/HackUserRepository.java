@@ -1,7 +1,9 @@
 package com.now.hack.repository;
 
-import org.springframework.stereotype.Repository;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.stereotype.Repository;
+
+import com.now.hack.model.User;
 
 
 @Repository
