@@ -77,7 +77,19 @@ public class HackUserController {
 			return new ResponseEntity<String>("Invalid Credentials", HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
-
+	
+	@GetMapping("/getAllUsers")
+	public ResponseEntity<String> getAllUsers(){
+		try {
+			String output = hackUserService.fetchAllUsers();
+			return new ResponseEntity<String>(output,HttpStatus.OK);
+		}
+		catch(Exception e) {
+			return new ResponseEntity<String>("Failure", HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+	
 	@PostMapping("/changePassword")
 	public ResponseEntity<String> changePasswordsetPassword(@RequestParam String input) {
 		try {

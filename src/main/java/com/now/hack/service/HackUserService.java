@@ -4,6 +4,7 @@ import java.math.BigInteger;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
@@ -13,6 +14,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +37,7 @@ public class HackUserService {
 			user.setEmail(inputJson.getString("email"));
 			user.setDateOfBirth(stringToDate(inputJson.getString("dateOfBirth")));
 			user.setFirstName(inputJson.getString("firstName"));
-			user.setPassword(inputJson.getString("password"));
+			user.setPassword(encrypt(inputJson.getString("password")));
 			user.setPhone(inputJson.getString("phone"));
 			user.setLastName(inputJson.getString("lastName"));
 			user.setPoints(new BigInteger("0"));
@@ -61,7 +63,7 @@ public class HackUserService {
 	public String userLogIn(JSONObject inputJson) {
 		try {
 			String email = inputJson.getString("email");
-			String password = inputJson.getString("password");
+			String password = encrypt(inputJson.getString("password"));
 			User user = hackUserRepository.getUserDetails(email, password);
 			if (user == null) {
 				throw new Exception("no user is present");
@@ -76,7 +78,7 @@ public class HackUserService {
 	public String changePassword(JSONObject inputJson) {
 		try {
 			String email = inputJson.getString("email");
-			String newPassword = inputJson.getString("password");
+			String newPassword = encrypt(inputJson.getString("password"));
 			User user = hackUserRepository.updateUserPassword(email, newPassword);
 			if (user != null)
 				return "success";
@@ -90,7 +92,7 @@ public class HackUserService {
 	public String checkAndchangePassword(JSONObject inputJson) {
 		try {
 			String email = inputJson.getString("email");
-			String oldPassword = inputJson.getString("oldPassword");
+			String oldPassword = encrypt(inputJson.getString("oldPassword"));
 			User user = hackUserRepository.getUserDetails(email, oldPassword);
 			if (user != null) {
 				return changePassword(inputJson);
@@ -135,6 +137,25 @@ public class HackUserService {
 		}
 
 		return null;
+	}
+
+	public String fetchAllUsers() throws JSONException {
+		List<User> userList = hackUserRepository.getAllUsers();
+		JSONArray userArr  = new JSONArray();
+		JSONObject userJson ;
+		for (User user:userList) {
+			userJson = new JSONObject();
+			userJson.put("email",user.getEmail());
+			userJson.put("phone",user.getPhone());
+			userJson.put("firstName",user.getFirstName());
+			userJson.put("lastName",user.getLastName());
+			userJson.put("points",user.getPoints());
+			userJson.put("password",decrypt(user.getPassword()));
+			userJson.put("dob",user.getDateOfBirth());
+			userJson.put("id",user.getId());
+			userArr.put(userJson);
+		}
+		return userArr.toString();
 	}
 	
 }
