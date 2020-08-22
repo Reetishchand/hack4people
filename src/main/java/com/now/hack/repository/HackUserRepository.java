@@ -14,10 +14,10 @@ import com.now.hack.model.User;
 @Repository
 public interface HackUserRepository extends CrudRepository<User, BigInteger>, Serializable {
 
-	@Query("SELECT u FROM User u WHERE u.email = ?1 and u.password = ?2;")
+	@Query("SELECT u FROM User u WHERE u.email = ?1 and u.password = ?2")
 	User getUserDetails(String email, String password);
 
-	@Query("Select u from User u;")
+	@Query("Select u from User u")
 	List<User> getAllUsers();
 
 	@Modifying
