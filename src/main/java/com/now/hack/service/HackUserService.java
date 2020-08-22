@@ -1,17 +1,14 @@
 package com.now.hack.service;
 
 import java.math.BigInteger;
-import java.security.spec.KeySpec;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Base64;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
-import javax.crypto.*;
+import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.logging.log4j.LogManager;
@@ -24,6 +21,7 @@ import org.springframework.stereotype.Service;
 import com.now.hack.Hack4PeopleApplication;
 import com.now.hack.model.User;
 import com.now.hack.repository.HackUserRepository;
+import com.sun.org.apache.xml.internal.security.utils.Base64;
 
 @Service
 public class HackUserService {
@@ -104,52 +102,39 @@ public class HackUserService {
 		}
 
 	}
-	private static String secret = "vusjbdisljbcsdcbsdhbc6328oyu2yuo2i7dyv26732gdqhx";
-	private static String salt = 				"8723dhu70g7to42ufh8372uq8hiquan;njin78yguca;kjc";
-	 
-	public  String encrypt(String strToEncrypt) 
-	{
-	    try
-	    {
-	        byte[] iv = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-	        IvParameterSpec ivspec = new IvParameterSpec(iv);
-	         
-	        SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
-	        KeySpec spec = new PBEKeySpec(secret.toCharArray(), salt.getBytes(), 65536, 256);
-	        SecretKey tmp = factory.generateSecret(spec);
-	        SecretKeySpec secretKey = new SecretKeySpec(tmp.getEncoded(), "AES");
-	         
-	        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-	        cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivspec);
-	        return Base64.getEncoder().encodeToString(cipher.doFinal(strToEncrypt.getBytes("UTF-8")));
-	    } 
-	    catch (Exception e) 
-	    {
-	      logger.error("Error while encrypting: {}" , e.toString());
-	    }
-	    return null;
-	}	
-	
-	
-	public  String decrypt(String strToDecrypt) {
-	    try
-	    {
-	        byte[] iv = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-	        IvParameterSpec ivspec = new IvParameterSpec(iv);
-	         
-	        SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
-	        KeySpec spec = new PBEKeySpec(secret.toCharArray(), salt.getBytes(), 65536, 256);
-	        SecretKey tmp = factory.generateSecret(spec);
-	        SecretKeySpec secretKey = new SecretKeySpec(tmp.getEncoded(), "AES");
-	         
-	        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
-	        cipher.init(Cipher.DECRYPT_MODE, secretKey, ivspec);
-	        return new String(cipher.doFinal(Base64.getDecoder().decode(strToDecrypt)));
-	    } 
-	    catch (Exception e) {
-	    	  logger.error("Error while decrypting: {}" , e.toString());
-	    }
-	    return null;
+	private static final String key = "aesEncryptionKey";
+	private static final String initVector = "encryptionIntVec";
+
+	public static String encrypt(String value) {
+		try {
+			IvParameterSpec iv = new IvParameterSpec(initVector.getBytes("UTF-8"));
+			SecretKeySpec skeySpec = new SecretKeySpec(key.getBytes("UTF-8"), "AES");
+
+			Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
+			cipher.init(Cipher.ENCRYPT_MODE, skeySpec, iv);
+
+			byte[] encrypted = cipher.doFinal(value.getBytes());
+			return Base64.encode(encrypted);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		return null;
+	}
+	public static String decrypt(String encrypted) {
+		try {
+			IvParameterSpec iv = new IvParameterSpec(initVector.getBytes("UTF-8"));
+			SecretKeySpec skeySpec = new SecretKeySpec(key.getBytes("UTF-8"), "AES");
+
+			Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
+			cipher.init(Cipher.DECRYPT_MODE, skeySpec, iv);
+			byte[] original = cipher.doFinal(Base64.decode(encrypted));
+
+			return new String(original);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+
+		return null;
 	}
 	
 }
